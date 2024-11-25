@@ -3,32 +3,32 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const CELL_SIZE = 20;
 
+// Initial Game State
 const initialState = {
     snake: [{ x: 5, y: 5 }],
     food: { x: 10, y: 10 },
-    direction: { x: 1, y: 0 }, // Snake starts moving right
+    direction: { x: 1, y: 0 },
     score: 0,
     gameOver: false,
 };
 
-let state = { ...initialState };
-
-// Utility Functions
+// Utility: Generate Random Position
 const randomPosition = (gridSize) => ({
     x: Math.floor(Math.random() * gridSize),
     y: Math.floor(Math.random() * gridSize),
 });
 
 // Pure Function: Update Game State
-const updateState = (state) => {
+const updateState = (state, inputDirection) => {
     if (state.gameOver) return state;
 
+    const direction = inputDirection() || state.direction;
+
     const newHead = {
-        x: state.snake[0].x + state.direction.x,
-        y: state.snake[0].y + state.direction.y,
+        x: state.snake[0].x + direction.x,
+        y: state.snake[0].y + direction.y,
     };
 
-    // Check for collision with walls or itself
     const hasCollided = (pos) =>
         pos.x < 0 ||
         pos.y < 0 ||
@@ -52,6 +52,7 @@ const updateState = (state) => {
         ...state,
         snake: newSnake,
         food: ateFood ? randomPosition(canvas.width / CELL_SIZE) : state.food,
+        direction,
         score: ateFood ? state.score + 1 : state.score,
     };
 };
@@ -82,31 +83,33 @@ const render = (state) => {
     }
 };
 
-
-
-// input
-document.addEventListener("keydown", (event) => {
-    const directions = {
-        ArrowUp: { x: 0, y: -1 },
-        ArrowDown: { x: 0, y: 1 },
-        ArrowLeft: { x: -1, y: 0 },
-        ArrowRight: { x: 1, y: 0 },
-    };
-    if (directions[event.key]) {
-        state = {
-            ...state,
-            direction: directions[event.key],
-        };
-    }
-});
-
 // Main Game Loop
-const gameLoop = () => {
-    state = updateState(state);
-    render(state);
-    if (!state.gameOver) {
-        setTimeout(gameLoop, 500);
+const gameLoop = (state) => {
+    const nextState = updateState(state, currentDirection);
+    render(nextState);
+    console.log(nextState.direction);
+
+    if (!nextState.gameOver) {
+        setTimeout(() => {
+            console.log("--------------------------------");
+            gameLoop(nextState);
+        }, 100);
     }
 };
 
-gameLoop();
+const directionMap = {
+    ArrowUp: { x: 0, y: -1 },
+    ArrowDown: { x: 0, y: 1 },
+    ArrowLeft: { x: -1, y: 0 },
+    ArrowRight: { x: 1, y: 0 },
+};
+
+let currentDirection = () => initialState.direction;
+document.addEventListener("keydown", (event) => {
+    debugger;
+    console.log(currentDirection());
+    currentDirection = () => directionMap[event.key];
+});
+
+// Start the Game
+gameLoop(initialState);
