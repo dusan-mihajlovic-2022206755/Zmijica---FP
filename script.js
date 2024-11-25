@@ -2,19 +2,10 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const CELL_SIZE = 20;
 
-const randomPosition = (gridSize, snake) => {
-    const possiblePositions = Array.from({ length: gridSize * gridSize }, (_, index) => ({
-        x: index % gridSize,
-        y: Math.floor(index / gridSize),
-    }));
-
-    const validPositions = possiblePositions.filter(
-        pos => !snake.some(segment => segment.x === pos.x && segment.y === pos.y)
-    );
-
-    // Return a random valid position
-    return validPositions[Math.floor(Math.random() * validPositions.length)];
-};
+const randomPosition = (gridSize) => ({
+    x: Math.floor(Math.random() * gridSize),
+    y: Math.floor(Math.random() * gridSize),
+});
 
 const bonusFoodSystem = (state) => {
     if (state.foodEaten >= 5 && !state.bonus) {
@@ -64,7 +55,7 @@ const movementSystem = (state) => {
         y: currentHead.y + currentDirection.y,
     };
 
-    // Prevent snake from moving backwards
+    // rešavanje baga sa dužinom 2
     if (state.snake.length > 1) {
         const secondSegment = state.snake[1];
         if (
@@ -103,9 +94,10 @@ const render = (state) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = "green";
-    state.snake.forEach((segment) =>
-        ctx.fillRect(segment.x * CELL_SIZE, segment.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-    );
+    state.snake.map((segment) => { //ne vidim gde bi drugde primenio map, pa sam ga ubacio ovde. Segment vraća radi poštovanja imutabilnosti...
+        ctx.fillRect(segment.x * CELL_SIZE, segment.y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        return segment;
+    });
 
     ctx.fillStyle = "darkgreen";
     ctx.fillRect(state.snake[0].x * CELL_SIZE, state.snake[0].y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
