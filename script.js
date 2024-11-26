@@ -5,7 +5,7 @@
             x: Math.floor(Math.random() * numCells),
             y: Math.floor(Math.random() * numCells),
         };
-
+        //da ne izgeneriše na samoj zmijici
         const filterArr = snakeArr.filter(elem => elem.x === pos.x && elem.y === pos.y); //primer filter
         if (filterArr.length === 0) {
             return pos;
@@ -13,7 +13,7 @@
             return randomPosition(gridSize, cellSize, snakeArr);
         }
     };
-    //proverava da li je pogodjeno sta treba i skida ga sa stanja
+    //proverava da li je pogođeno sta treba i skida ga sa stanja
     const targetHit = (state, target, scoreIncrease, onHit) => {
         if (state[target] && state.snake[0].x === state[target].x && state.snake[0].y === state[target].y) {
             return {
@@ -65,7 +65,7 @@
             state
         );
     };
-
+    //sistem koji crta zmijicu i simulira kretanje
     const movementSystem = (state) => {
         if (state.gameOver) return state;
 
@@ -75,6 +75,7 @@
             y: currentHead.y + state.direction.y,
         };
 
+        //provera za udarac unazad
         if (state.snake.length > 1) {
             const secondSegment = state.snake[1];
             if (nextHead.x === secondSegment.x && nextHead.y === secondSegment.y) {
@@ -85,7 +86,7 @@
         const newSnake = [nextHead, ...state.snake.slice(0, -1)];
         return { ...state, snake: newSnake };
     };
-
+    //proverava udarce u zid ili u samu sebe
     const collisionSystem = (state, gridSize, cellSize) => {
         if (state.gameOver) return state;
 
