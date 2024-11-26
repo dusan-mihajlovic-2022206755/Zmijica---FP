@@ -1,5 +1,4 @@
 (function () {
-    // Generates a random position on the grid, avoiding the snake's body
     const randomPosition = (gridSize, cellSize, snakeArr) => {
         const numCells = gridSize / cellSize;
         const pos = {
@@ -7,56 +6,63 @@
             y: Math.floor(Math.random() * numCells),
         };
 
-        const filterArr = snakeArr.filter(elem => elem.x === pos.x && elem.y === pos.y); //primer za filter
+        const filterArr = snakeArr.filter(elem => elem.x === pos.x && elem.y === pos.y); //primer filter
         if (filterArr.length === 0) {
             return pos;
         } else {
-            return randomPosition(gridSize, cellSize, snakeArr); //primer rekurzije (osim gameLoop-a)
+            return randomPosition(gridSize, cellSize, snakeArr);
         }
     };
-
+    //proverava da li je pogodjeno sta treba i skida ga sa stanja
     const targetHit = (state, target, scoreIncrease, onHit) => {
         if (state[target] && state.snake[0].x === state[target].x && state.snake[0].y === state[target].y) {
             return {
                 ...onHit({ ...state, score: state.score + scoreIncrease }),
-                [target]: null,
+                [target]: null
             };
         }
         return state;
     };
 
     const foodSystem = (state, gridSize, cellSize) => {
-        const newState = targetHit(state, 'food', 1,
-            (currentState) => ({
-                ...currentState,
-                snake: [currentState.snake[0], ...currentState.snake],
-                foodEaten: currentState.foodEaten + 1,
-            })
-        );
+        const regularFoodSystem = (state) => {
+            const newState = targetHit(state, 'food', 1,
+                (currentState) => ({
+                    ...currentState,
+                    snake: [currentState.snake[0], ...currentState.snake],
+                    foodEaten: currentState.foodEaten + 1,
+                })
+            );
 
-        if (!newState.food) {
-            return {
-                ...newState,
-                food: randomPosition(gridSize, cellSize, newState.snake),
-            };
-        }
+            if (!newState.food) { //ukoliko je pogodjeno, skinuto je sa stanja stoga se mora dodati
+                return {
+                    ...newState,
+                    food: randomPosition(gridSize, cellSize, newState.snake),
+                };
+            }
 
-        return newState;
-    };
+            return newState;
+        };
 
-    const bonusFoodSystem = (state, gridSize, cellSize) => {
-        if (state.foodEaten >= 5 && !state.bonus) {
-            return {
-                ...state,
-                bonus: randomPosition(gridSize, cellSize, state.snake),
-            };
-        }
+        const bonusFoodSystem = (state) => {
+            if (state.foodEaten >= 5 && !state.bonus) {
+                return {
+                    ...state,
+                    bonus: randomPosition(gridSize, cellSize, state.snake),
+                };
+            }
 
-        return targetHit(state, 'bonus', 5,
-            (currentState) => ({
-                ...currentState,
-                foodEaten: 0,
-            })
+            return targetHit(state, 'bonus', 5,
+                (currentState) => ({
+                    ...currentState,
+                    foodEaten: 0,
+                })
+            );
+        };
+        const foodSubsystems = [regularFoodSystem, bonusFoodSystem];
+        return foodSubsystems.reduce(
+            (state, system) => system(state),
+            state
         );
     };
 
@@ -72,7 +78,7 @@
         if (state.snake.length > 1) {
             const secondSegment = state.snake[1];
             if (nextHead.x === secondSegment.x && nextHead.y === secondSegment.y) {
-                return state;
+                return { ...state, gameOver: true };
             }
         }
 
@@ -102,7 +108,7 @@
         ctx.clearRect(0, 0, gridSize, gridSize);
 
         ctx.fillStyle = "green";
-        state.snake.map((segment) => { //ne vidim gde bi drugde primenio map, pa sam ga ubacio ovde. Funktor vraća segment radi poštovanja imutabilnosti...
+        state.snake.map((segment) => {
             ctx.fillRect(segment.x * cellSize, segment.y * cellSize, cellSize, cellSize);
             return segment;
         });
@@ -124,8 +130,10 @@
 
         if (state.gameOver) {
             ctx.fillStyle = "black";
-            ctx.font = "24px Arial";
+            ctx.font = "30px Arial";
             ctx.fillText("Game Over", gridSize / 2 - 60, gridSize / 2);
+            ctx.font = "24px Arial";
+            ctx.fillText(`Score: ${state.score}`, gridSize / 2 - 35, gridSize / 2 + 30);
         }
     };
 
@@ -133,11 +141,10 @@
         const systems = [
             movementSystem,
             collisionSystem,
-            foodSystem,
-            bonusFoodSystem,
+            foodSystem
         ];
 
-        const nextState = systems.reduce((state, system) => system(state, gridSize, cellSize, ctx), state);  //primer za reduce i kompozicije
+        const nextState = systems.reduce((state, system) => system(state, gridSize, cellSize), state);
         render(nextState, gridSize, cellSize, ctx);
 
         if (!nextState.gameOver) {
@@ -147,7 +154,6 @@
         }
     };
 
-    // Event listener for snake direction
     document.addEventListener("keydown", (event) => {
         const directionMap = {
             ArrowUp: { x: 0, y: -1 },
@@ -160,7 +166,6 @@
         }
     });
 
-    // Initial game state
     const initialState = {
         snake: [{ x: 5, y: 5 }],
         food: { x: 10, y: 10 },
@@ -183,7 +188,7 @@
     canvas.width = GRID_SIZE;
     canvas.height = GRID_SIZE;
 
-    /*Trudio sam se da funckcije budu što čistije. Na Math.Random i na canvas nisam mogao da utičem */
+    /*Trudio sam se da funckcije budu što čistije. Na Math.Random,canvas, setTimeout nisam mogao da utičem */
 
     gameLoop(initialState, GRID_SIZE, CELL_SIZE, INTERVAL_LENGTH_MILLISECONDS, CTX);
 })();
