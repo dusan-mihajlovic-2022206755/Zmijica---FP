@@ -2,6 +2,19 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const CELL_SIZE = 20;
 
+const initialState = {
+    snake: [{ x: 5, y: 5 }],
+    food: { x: 10, y: 10 },
+    direction: { x: 1, y: 0 },
+    score: 0,
+    gameOver: false,
+    bonus: null,
+    foodEaten: 0,
+};
+
+let currentDirection = { x: 1, y: 0 };
+
+
 const randomPosition = (gridSize) => ({
     x: Math.floor(Math.random() * gridSize),
     y: Math.floor(Math.random() * gridSize),
@@ -138,17 +151,7 @@ const gameLoop = (state) => {
     }
 };
 
-const initialState = {
-    snake: [{ x: 5, y: 5 }],
-    food: { x: 10, y: 10 },
-    direction: { x: 1, y: 0 },
-    score: 0,
-    gameOver: false,
-    bonus: null,
-    foodEaten: 0,
-};
 
-let currentDirection = { x: 1, y: 0 };
 
 document.addEventListener("keydown", (event) => {
     const directionMap = {
