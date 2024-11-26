@@ -1,14 +1,16 @@
 (function () {
-    const randomPosition = (gridSize, snakeArr) => {
+    const randomPosition = (gridSize, cellSize, snakeArr) => {
+        const numCells = gridSize / cellSize; // number of cells in the grid
         const pos = {
-            x: Math.floor(Math.random() * gridSize),
-            y: Math.floor(Math.random() * gridSize),
+            x: Math.floor(Math.random() * numCells),
+            y: Math.floor(Math.random() * numCells),
         };
+
         const filterArr = snakeArr.filter(elem => elem.x === pos.x && elem.y === pos.y); //primer za filter
         if (filterArr.length === 0) {
             return pos;
         } else {
-            return randomPosition(gridSize, snakeArr); //primer rekurzije (osim gameLoop-a)
+            return randomPosition(gridSize, cellSize, snakeArr); //primer rekurzije (osim gameLoop-a)
         }
     };
 
@@ -16,7 +18,7 @@
         if (state.foodEaten >= 5 && !state.bonus) {
             return {
                 ...state,
-                bonus: randomPosition(gridSize / cellSize, state.snake),
+                bonus: randomPosition(gridSize, cellSize, state.snake),
             };
         }
         return state;
@@ -43,7 +45,7 @@
             return {
                 ...state,
                 snake: [state.snake[0], ...state.snake],
-                food: randomPosition(gridSize / cellSize, state.snake),
+                food: randomPosition(gridSize, cellSize, state.snake),
                 score: state.score + 1,
                 foodEaten: state.foodEaten + 1,
             };
@@ -78,11 +80,12 @@
     const collisionSystem = (state, gridSize, cellSize) => {
         if (state.gameOver) return state;
 
+        const numCells = gridSize / cellSize;
         const hasCollided = (pos) =>
             pos.x < 0 ||
             pos.y < 0 ||
-            pos.x >= gridSize / cellSize ||
-            pos.y >= gridSize / cellSize ||
+            pos.x >= numCells ||
+            pos.y >= numCells ||
             state.snake.some(
                 (segment, index) => index !== 0 && segment.x === pos.x && segment.y === pos.y
             );
@@ -141,7 +144,7 @@
         if (!nextState.gameOver) {
             setTimeout(() => gameLoop(
                 {...nextState, direction: currentDirection},
-            gridSize, cellSize, intervalLength, ctx), intervalLength);
+                gridSize, cellSize, intervalLength, ctx), intervalLength);
         }
     };
 
@@ -172,16 +175,14 @@
     const canvas = document.getElementById("gameCanvas");
     const CTX = canvas.getContext("2d");
 
-    const CELL_SIZE = 20;
-    const GRID_SIZE = 500;
+    const CELL_SIZE = 50;
+    const GRID_SIZE = 700;
     const INTERVAL_LENGTH_MILISECONDS = 100;
 
     canvas.width = GRID_SIZE;
     canvas.height = GRID_SIZE;
 
     /*Trudio sam se da funckcije budu što čistije. Na Math.Random i na canvas nisam mogao da utičem */
-
-
 
     gameLoop(initialState, GRID_SIZE, CELL_SIZE, INTERVAL_LENGTH_MILISECONDS, CTX);
 })();
