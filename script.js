@@ -14,11 +14,19 @@ const initialState = {
 
 let currentDirection = { x: 1, y: 0 };
 
-
-const randomPosition = (gridSize) => ({
-    x: Math.floor(Math.random() * gridSize),
-    y: Math.floor(Math.random() * gridSize),
-});
+const randomPosition = (gridSize, snakeArr) => {
+    const pos = {
+        x: Math.floor(Math.random() * gridSize),
+        y: Math.floor(Math.random() * gridSize),
+    }
+    const filterArr = snakeArr.filter(elem => elem.x === pos.x && elem.y === pos.y);
+    if (filterArr.length === 0){
+        return pos;
+    }
+    else{
+       return randomPosition(gridSize, snakeArr);
+    }
+};
 
 const bonusFoodSystem = (state) => {
     if (state.foodEaten >= 5 && !state.bonus) {
